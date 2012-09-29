@@ -1,0 +1,18 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="test" type="LeiningenRunConfiguration" factoryName="Leiningen">
+    <LeiningenRunnerParameters>
+      <option name="goals">
+        <list>
+          <option value="test" />
+        </list>
+      </option>
+      <option name="workingDirectory" value="$PROJECT_DIR$" />
+    </LeiningenRunnerParameters>
+    <RunnerSettings RunnerId="Profile ">
+      <option name="myExternalizedOptions" value="&#10;additional-options2=onexit\=snapshot&#10;startup=0&#10;" />
+    </RunnerSettings>
+    <RunnerSettings RunnerId="Run" />
+    <ConfigurationWrapper RunnerId="Run" />
+    <method />
+  </configuration>
+</component>
