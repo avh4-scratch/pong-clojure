@@ -10,21 +10,12 @@
      (proxy [java.awt.event.ActionListener] []
        (actionPerformed [~'event] ~@body))))
 
-; Background
+; Definitions
 
-(defn grassColor []
-  (new Color 87 153 88))
+(defn grassColor [] (new Color 87 153 88))
+(defn ballColor [] (new Color 13 75 145))
 
-(defn drawBackground [g w h]
-  (doto g
-    (.setColor (grassColor))
-    (.fillRect 0 0 w h)
-    ))
-
-; Ball
-
-(defn ballColor []
-  (new Color 13 75 145))
+; Game logic
 
 (defn new-ball [w h speed]
   (agent {:x (/ w 2), :y (/ h 2),
@@ -48,27 +39,44 @@
   (-> state (adjust-velocity h) adjust-position)
   )
 
-(defn centeredCircle [g x y diameter]
-  (.fillOval g (- x (/ diameter 2)) (- y (/ diameter 2)) diameter diameter)
-  )
+(defn centered-circle-bounds [x y diameter]
+  [(- x (/ diameter 2)) (- y (/ diameter 2)) diameter diameter])
 
-(defn drawBall [g ballState]
-  (doto g
-    (.setColor (ballColor))
-    (centeredCircle (:x ballState) (:y ballState) 25)
-    ))
+(defn ball-bounds [ballState]
+  (centered-circle-bounds (ballState :x) (ballState :y) 25))
+
+; Swing wrapper
+
+(defn fill-rect [g x y w h]
+  (.fillRect g x y w h))
+(defn fill-oval [g x y w h]
+  (.fillOval g x y w h))
+
+(defmulti draw :shape)
+(defmethod draw :rect [command g]
+  (.setColor g (command :color))
+  (apply (partial fill-rect g) (command :bounds)))
+(defmethod draw :oval [command g]
+  (.setColor g (command :color))
+  (apply (partial fill-oval g) (command :bounds)))
+
+(defn component [width height draw-commands]
+  (proxy [JComponent] []
+    (getPreferredSize[] (new Dimension width height))
+    (paintComponent [g]
+      (let [commands (draw-commands)]
+        (doseq [command commands]
+          (draw command g))
+          )
+      )))
 
 ; Pong game
 
-(defn pongCanvas [w h ball]
-  (proxy [JComponent] []
-    (getPreferredSize [] (new Dimension w h))
-    (paintComponent [g]
-      (doto g
-        (drawBackground w h)
-        (drawBall @ball)
-        ))
-    ))
+(defn pongCanvas [width height ball]
+  (component width height #(vector
+    {:shape :rect, :bounds [0 0 width height], :color (grassColor)}
+    {:shape :oval, :bounds (ball-bounds @ball), :color (ballColor)}
+    )))
 
 (defn pongGame [w h]
   (let [ball (new-ball w h 5)
