@@ -3,7 +3,6 @@
   (:use [clojure.math.numeric-tower])
   (:use [lamina.core])
   (:use [clj-time.core]) )
-(import '(javax.swing JFrame SwingUtilities WindowConstants))
 
 ; Definitions
 
@@ -55,18 +54,10 @@
    {:shape :oval, :bounds (ball-bounds state), :color (ballColor)}
    ])
 
-(defn pongGame [w h]
+(defn pong-game [w h]
   (let [game-state {:width w, :height h, :ball (new-ball w h 5)}
         time-signal (periodically 30 now)
         game-state-signal (reductions* update-ball game-state time-signal)
         graphics-signal (map* draw-pong-game game-state-signal)
         ]
-
-    (doto (new JFrame)
-      (.add (component w h graphics-signal))
-      (.pack)
-      (.setLocationRelativeTo nil)
-      (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)
-      (.setVisible true)
-      )
-    ))
+    (window (component w h graphics-signal))))

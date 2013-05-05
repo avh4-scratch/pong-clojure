@@ -37,3 +37,15 @@
         (SwingUtilities/invokeLater #(.repaint self)))))
 
     self))
+
+(defn window [component]
+  (doto (new JFrame)
+    (.add component)
+    (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)))
+
+(defn show [window]
+  (SwingUtilities/invokeLater
+    #(doto window
+      (.pack)
+      (.setLocationRelativeTo nil)
+      (.setVisible true))))

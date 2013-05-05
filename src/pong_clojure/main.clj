@@ -1,5 +1,5 @@
 (ns pong-clojure.main
-  (:use [pong-clojure.core]))
-(import '(javax.swing SwingUtilities))
+  (:use [pong-clojure.core])
+  (:use [fui.core]))
 
-(SwingUtilities/invokeLater #(pongGame 800 600))
+(show (pong-game 800 600))
