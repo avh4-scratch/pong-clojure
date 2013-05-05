@@ -9,6 +9,7 @@
 
 (defn grassColor [] (color 87 153 88))
 (defn ballColor [] (color 13 75 145))
+(defn whiteColor [] (color 255 255 245))
 
 ; Game logic
 
@@ -44,8 +45,13 @@
 
 ; Pong game
 
+(defn inset [d bounds]
+  [(+ (bounds 0) d) (+ (bounds 1) d) (- (bounds 2) d d) (- (bounds 3) d d)])
+
 (defn draw-pong-game [state]
   [{:shape :rect, :bounds (game-bounds state), :color (grassColor)}
+   {:shape :rect, :bounds (inset 20 (game-bounds state)), :color (whiteColor)}
+   {:shape :rect, :bounds (inset 25 (game-bounds state)), :color (grassColor)}
    {:shape :oval, :bounds (ball-bounds state), :color (ballColor)}
    ])
 
