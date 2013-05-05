@@ -64,13 +64,20 @@
   (.setColor g (command :color))
   (apply (partial fill-oval g) (command :bounds)))
 
-(defn component [width height graphics-ref]
-  (proxy [JComponent] []
-    (getPreferredSize[] (new Dimension width height))
-    (paintComponent [g]
-      (doseq [command @graphics-ref]
-        (draw command g))
-      )))
+(defn component [width height graphics-signal]
+  (let [graphics-ref (ref [])
+        self (proxy [JComponent] []
+          (getPreferredSize[] (new Dimension width height))
+          (paintComponent [g]
+            (doseq [command @graphics-ref]
+              (draw command g))) ) ]
+
+    (receive-all graphics-signal
+      (fn [x] (do
+        (dosync (ref-set graphics-ref x))
+        (SwingUtilities/invokeLater #(.repaint self)))))
+
+    self))
 
 ; Pong game
 
@@ -81,20 +88,13 @@
 
 (defn pongGame [w h]
   (let [game-state {:width w, :height h, :ball (new-ball w h 5)}
-        graphics-ref (ref [])
-        canvas (component w h graphics-ref)
-        jframe (new JFrame)
         time-signal (periodically 30 now)
         game-state-signal (reductions* update-ball game-state time-signal)
         graphics-signal (map* draw-pong-game game-state-signal)
         ]
-    (receive-all (fork graphics-signal)
-      (fn [x] (do
-        (dosync (ref-set graphics-ref x))
-        (SwingUtilities/invokeLater #(.repaint canvas)))))
 
     (doto (new JFrame)
-      (.add canvas)
+      (.add (component w h graphics-signal))
       (.pack)
       (.setLocationRelativeTo nil)
       (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)
