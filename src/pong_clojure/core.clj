@@ -81,7 +81,7 @@
 (defn pongGame [w h]
   (let [ball (new-ball w h 5)
         canvas (pongCanvas w h ball)
-        timer (new Timer 100 nil)]
+        timer (new Timer 30 nil)]
 
     (with-action timer
       (send ball update-ball h)
