@@ -5,9 +5,9 @@
 
 (defn color [r g b] (new Color r g b))
 
-(defn fill-rect [g x y w h]
+(defn- fill-rect [g x y w h]
   (.fillRect g x y w h))
-(defn fill-oval [g x y w h]
+(defn- fill-oval [g x y w h]
   (.fillOval g x y w h))
 
 (defmulti draw :shape)

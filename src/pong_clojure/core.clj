@@ -4,14 +4,6 @@
   (:use [lamina.core])
   (:use [clj-time.core]) )
 
-; Definitions
-
-(defn grassColor [] (color 87 153 88))
-(defn ballColor [] (color 13 75 145))
-(defn whiteColor [] (color 255 255 245))
-
-; Game logic
-
 (defn new-ball [w h speed]
   {:x (/ w 2), :y (/ h 2),
           :vx speed, :vy speed})
@@ -39,20 +31,28 @@
   (let [ball-state (game-state :ball)]
     (centered-circle-bounds (ball-state :x) (ball-state :y) 25)))
 
-(defn game-bounds [game-state]
-  [0 0 (game-state :width) (game-state :height)])
-
 ; Pong game
 
 (defn inset [d bounds]
   [(+ (bounds 0) d) (+ (bounds 1) d) (- (bounds 2) d d) (- (bounds 3) d d)])
 
+(defmacro fill-rect [bounds color]
+  {:shape :rect, :bounds bounds, :color color})
+
+(defmacro fill-oval [bounds color]
+  {:shape :oval, :bounds bounds, :color color})
+
 (defn draw-pong-game [state]
-  [{:shape :rect, :bounds (game-bounds state), :color (grassColor)}
-   {:shape :rect, :bounds (inset 20 (game-bounds state)), :color (whiteColor)}
-   {:shape :rect, :bounds (inset 25 (game-bounds state)), :color (grassColor)}
-   {:shape :oval, :bounds (ball-bounds state), :color (ballColor)}
-   ])
+  (let [grass-color (color 87 153 88)
+        ball-color (color 13 75 145)
+        lines-color (color 255 255 245)
+        game-bounds [0 0 (state :width) (state :height)]
+        ]
+    [(fill-rect game-bounds grass-color)
+     (fill-rect (inset 20 game-bounds) lines-color)
+     (fill-rect (inset 25 game-bounds) grass-color)
+     (fill-oval (ball-bounds state) ball-color)
+     ]))
 
 (defn pong-game [w h]
   (let [game-state {:width w, :height h, :ball (new-ball w h 5)}
