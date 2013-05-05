@@ -1,5 +1,7 @@
-(ns pong-clojure.core)
-(use 'clojure.math.numeric-tower)
+(ns pong-clojure.core
+  (:use [clojure.math.numeric-tower])
+  (:use [lamina.core])
+  (:use [clj-time.core]) )
 (import '(javax.swing JFrame JComponent SwingUtilities WindowConstants Timer))
 (import '(java.awt Dimension Graphics Color))
 
@@ -31,7 +33,7 @@
     :vy (if (>= (:y sprite) h) (- (abs (:vy sprite))) (:vy sprite))
     :vx (if (>= (:x sprite) w) (- (abs (:vx sprite))) (:vx sprite)) ))
 
-(defn update-ball [state]
+(defn update-ball [state time-signal]
   (assoc state :ball
     (-> (state :ball)
       (adjust-velocity (state :width) (state :height))
@@ -62,14 +64,12 @@
   (.setColor g (command :color))
   (apply (partial fill-oval g) (command :bounds)))
 
-(defn component [width height draw-commands state-agent]
+(defn component [width height graphics-ref]
   (proxy [JComponent] []
     (getPreferredSize[] (new Dimension width height))
     (paintComponent [g]
-      (let [commands (draw-commands @state-agent)]
-        (doseq [command commands]
-          (draw command g))
-          )
+      (doseq [command @graphics-ref]
+        (draw command g))
       )))
 
 ; Pong game
@@ -79,22 +79,19 @@
    {:shape :oval, :bounds (ball-bounds state), :color (ballColor)}
    ])
 
-(defn pongCanvas [width height game-state-agent]
-  (component width height draw-pong-game game-state-agent))
-
-(defn update-game [state-agent]
-  (send state-agent update-ball))
-
 (defn pongGame [w h]
   (let [game-state {:width w, :height h, :ball (new-ball w h 5)}
-        game-state-agent (agent game-state)
-        canvas (pongCanvas w h game-state-agent)
-        timer (new Timer 30 nil)]
-
-    (with-action timer
-      (update-game game-state-agent)
-      (SwingUtilities/invokeLater #(.repaint canvas))
-      )
+        graphics-ref (ref [])
+        canvas (component w h graphics-ref)
+        jframe (new JFrame)
+        time-signal (periodically 30 now)
+        game-state-signal (reductions* update-ball game-state time-signal)
+        graphics-signal (map* draw-pong-game game-state-signal)
+        ]
+    (receive-all (fork graphics-signal)
+      (fn [x] (do
+        (dosync (ref-set graphics-ref x))
+        (SwingUtilities/invokeLater #(.repaint canvas)))))
 
     (doto (new JFrame)
       (.add canvas)
@@ -103,6 +100,4 @@
       (.setDefaultCloseOperation WindowConstants/EXIT_ON_CLOSE)
       (.setVisible true)
       )
-
-    (.start timer)
     ))
