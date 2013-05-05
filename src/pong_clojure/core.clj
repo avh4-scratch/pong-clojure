@@ -26,13 +26,16 @@
     :x (+ (:x sprite) (:vx sprite))
     :y (+ (:y sprite) (:vy sprite)) ))
 
-(defn adjust-velocity [sprite h]
+(defn adjust-velocity [sprite w h]
   (assoc sprite
-    :vy (if (>= (:y sprite) h) (- (abs (:vy sprite))) (:vy sprite)) ))
+    :vy (if (>= (:y sprite) h) (- (abs (:vy sprite))) (:vy sprite))
+    :vx (if (>= (:x sprite) w) (- (abs (:vx sprite))) (:vx sprite)) ))
 
 (defn update-ball [state]
   (assoc state :ball
-    (-> (state :ball) (adjust-velocity (state :height)) adjust-position)))
+    (-> (state :ball)
+      (adjust-velocity (state :width) (state :height))
+      adjust-position) ))
 
 (defn centered-circle-bounds [x y diameter]
   [(- x (/ diameter 2)) (- y (/ diameter 2)) diameter diameter])
