@@ -1,21 +1,14 @@
 (ns pong-clojure.core
+  (:use [fui.core])
   (:use [clojure.math.numeric-tower])
   (:use [lamina.core])
   (:use [clj-time.core]) )
-(import '(javax.swing JFrame JComponent SwingUtilities WindowConstants Timer))
-(import '(java.awt Dimension Graphics Color))
-
-; Support
-
-(defmacro with-action [component & body]
-  `(.addActionListener ~component
-     (proxy [java.awt.event.ActionListener] []
-       (actionPerformed [~'event] ~@body))))
+(import '(javax.swing JFrame SwingUtilities WindowConstants))
 
 ; Definitions
 
-(defn grassColor [] (new Color 87 153 88))
-(defn ballColor [] (new Color 13 75 145))
+(defn grassColor [] (color 87 153 88))
+(defn ballColor [] (color 13 75 145))
 
 ; Game logic
 
@@ -48,36 +41,6 @@
 
 (defn game-bounds [game-state]
   [0 0 (game-state :width) (game-state :height)])
-
-; Swing wrapper
-
-(defn fill-rect [g x y w h]
-  (.fillRect g x y w h))
-(defn fill-oval [g x y w h]
-  (.fillOval g x y w h))
-
-(defmulti draw :shape)
-(defmethod draw :rect [command g]
-  (.setColor g (command :color))
-  (apply (partial fill-rect g) (command :bounds)))
-(defmethod draw :oval [command g]
-  (.setColor g (command :color))
-  (apply (partial fill-oval g) (command :bounds)))
-
-(defn component [width height graphics-signal]
-  (let [graphics-ref (ref [])
-        self (proxy [JComponent] []
-          (getPreferredSize[] (new Dimension width height))
-          (paintComponent [g]
-            (doseq [command @graphics-ref]
-              (draw command g))) ) ]
-
-    (receive-all graphics-signal
-      (fn [x] (do
-        (dosync (ref-set graphics-ref x))
-        (SwingUtilities/invokeLater #(.repaint self)))))
-
-    self))
 
 ; Pong game
 
