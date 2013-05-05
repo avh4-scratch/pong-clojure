@@ -5,18 +5,13 @@
 
 (defn color [r g b] (new Color r g b))
 
-(defn- fill-rect [g x y w h]
-  (.fillRect g x y w h))
-(defn- fill-oval [g x y w h]
-  (.fillOval g x y w h))
-
 (defmulti draw :shape)
-(defmethod draw :rect [command g]
-  (.setColor g (command :color))
-  (apply (partial fill-rect g) (command :bounds)))
-(defmethod draw :oval [command g]
-  (.setColor g (command :color))
-  (apply (partial fill-oval g) (command :bounds)))
+(defmethod draw :rect [{color :color [x y w h] :bounds} g]
+  (.setColor g color)
+  (.fillRect g x y w h))
+(defmethod draw :oval [{color :color [x y w h] :bounds} g]
+  (.setColor g color)
+  (.fillOval g x y w h))
 
 (defmacro with-action [component & body]
   `(.addActionListener ~component

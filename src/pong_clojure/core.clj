@@ -27,14 +27,13 @@
 (defn centered-circle-bounds [x y diameter]
   [(- x (/ diameter 2)) (- y (/ diameter 2)) diameter diameter])
 
-(defn ball-bounds [game-state]
-  (let [ball-state (game-state :ball)]
-    (centered-circle-bounds (ball-state :x) (ball-state :y) 25)))
+(defn ball-bounds [{{x :x y :y} :ball}]
+  (centered-circle-bounds x y 25))
 
 ; Pong game
 
-(defn inset [d bounds]
-  [(+ (bounds 0) d) (+ (bounds 1) d) (- (bounds 2) d d) (- (bounds 3) d d)])
+(defn inset [d [x y w h]]
+  [(+ x d) (+ y d) (- w d d) (- h d d)])
 
 (defmacro fill-rect [bounds color]
   {:shape :rect, :bounds bounds, :color color})
