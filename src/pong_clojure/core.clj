@@ -4,6 +4,10 @@
   (:use [lamina.core])
   (:use [clj-time.core]) )
 
+(def grass-color (color 87 153 88))
+(def ball-color (color 13 75 145))
+(def lines-color (color 255 255 245))
+
 (defn new-ball [w h speed]
   {:x (/ w 2), :y (/ h 2),
           :vx speed, :vy speed})
@@ -42,11 +46,7 @@
   {:shape :oval, :bounds bounds, :color color})
 
 (defn draw-pong-game [state]
-  (let [grass-color (color 87 153 88)
-        ball-color (color 13 75 145)
-        lines-color (color 255 255 245)
-        game-bounds [0 0 (state :width) (state :height)]
-        ]
+  (let [game-bounds [0 0 (state :width) (state :height)] ]
     [(fill-rect game-bounds grass-color)
      (fill-rect (inset 20 game-bounds) lines-color)
      (fill-rect (inset 25 game-bounds) grass-color)
