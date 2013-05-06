@@ -1,5 +1,7 @@
 (ns pong-clojure.core
   (:use [fui.core])
+  (:use [fui.drawing])
+  (:use [fui.geometry])
   (:use [clojure.math.numeric-tower])
   (:use [lamina.core])
   (:use [clj-time.core]) )
@@ -28,30 +30,19 @@
       (adjust-velocity (state :width) (state :height))
       adjust-position) ))
 
-(defn centered-circle-bounds [x y diameter]
-  [(- x (/ diameter 2)) (- y (/ diameter 2)) diameter diameter])
+(defn draw-background [{w :width h :height}]
+  (let [bounds [0 0 w h]]
+    [(fill-rect bounds grass-color)
+     (fill-rect (inset 20 bounds) lines-color)
+     (fill-rect (inset 25 bounds) grass-color) ]))
 
-(defn ball-bounds [{{x :x y :y} :ball}]
-  (centered-circle-bounds x y 25))
-
-; Pong game
-
-(defn inset [d [x y w h]]
-  [(+ x d) (+ y d) (- w d d) (- h d d)])
-
-(defmacro fill-rect [bounds color]
-  {:shape :rect, :bounds bounds, :color color})
-
-(defmacro fill-oval [bounds color]
-  {:shape :oval, :bounds bounds, :color color})
+(defn draw-ball [{x :x y :y}]
+  [(fill-oval (from-center x y 25) ball-color)])
 
 (defn draw-pong-game [state]
-  (let [game-bounds [0 0 (state :width) (state :height)] ]
-    [(fill-rect game-bounds grass-color)
-     (fill-rect (inset 20 game-bounds) lines-color)
-     (fill-rect (inset 25 game-bounds) grass-color)
-     (fill-oval (ball-bounds state) ball-color)
-     ]))
+  (concat
+    (draw-background state)
+    (draw-ball (:ball state))))
 
 (defn pong-game [w h]
   (let [game-state {:width w, :height h, :ball (new-ball w h 5)}
